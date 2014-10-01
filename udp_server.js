@@ -3,6 +3,7 @@
  */
 function UDPServer() {
     this.config = require('./udp_config');
+    this.fs = require('fs');
     this.dgram = require('dgram');
     this.server = this.dgram.createSocket('udp4');
 
@@ -20,7 +21,10 @@ UDPServer.prototype.onEvent = function() {
     });
 
     _this.server.on('message', function (message, remote) {
-        console.log(message+'');
+        _this.fs.appendFile(_this.config.log, message+'\n', function(err) {
+            if (err) throw err;
+            console.log(message+'');
+        });
     });
 
     return;
@@ -30,7 +34,10 @@ UDPServer.prototype.onEvent = function() {
  * 启动服务器
  */
 UDPServer.prototype.startUp = function(port, host) {
-    this.server.bind(port, host);
+    var _this = this;
+    _this.fs.unlink(_this.config.log, function() {
+        _this.server.bind(port, host);
+    });
 
     return;
 }
@@ -45,5 +52,8 @@ UDPServer.prototype.init = function() {
     return;
 }
 
+/**
+ * 实例化
+ */
 var server = new UDPServer();
 server.init();

@@ -11,18 +11,17 @@ function UDPClient() {
 /**
  * 发送信息
  */
-UDPClient.prototype.sendMsg = function(index, limit) {
+UDPClient.prototype.sendMsg = function(index, limit, name) {
     var _this = this,
-        message = new Buffer(index+'');
+        message = new Buffer(index+' from '+name);
 
     if (index !== limit) {
         var client = _this.dgram.createSocket('udp4');
-        // console.log(client);return;
         client.send(message, 0, message.length, _this.config.port, _this.config.host, function(err, bytes) {
-            if (err) throw err;
+            // if (err) throw err;
             client.close();
 
-            _this.sendMsg(++index, limit);
+            _this.sendMsg(++index, limit, name);
         });
     } else {
         console.timeEnd('udp');
@@ -34,12 +33,19 @@ UDPClient.prototype.sendMsg = function(index, limit) {
 /**
  * 执行入口
  */
-UDPClient.prototype.init = function() {
+UDPClient.prototype.init = function(name) {
+    // console.log(name);
     console.time('udp');
-    this.sendMsg(0, 1000);
+    this.sendMsg(0, 1000, name);
 
     return;
 }
 
-var client = new UDPClient();
-client.init();
+/**
+ * 实例化
+ */
+var clientA = new UDPClient(),
+    clientB = new UDPClient();
+
+clientA.init('UDP Client A');
+clientB.init('UDP Client B');
