@@ -1,10 +1,12 @@
+var config = require('./udp_config'),
+    cluster = require('cluster'),
+    os = require('os'),
+    dgram = require('dgram');
+
 /**
  * UDP 客户端
  */
 function UDPClient() {
-    this.config = require('./udp_config');
-    this.dgram = require('dgram');
-
     return;
 }
 
@@ -16,15 +18,15 @@ UDPClient.prototype.sendMsg = function(index, limit, name) {
         message = new Buffer(index+' from '+name);
 
     if (index !== limit) {
-        var client = _this.dgram.createSocket('udp4');
-        client.send(message, 0, message.length, _this.config.port, _this.config.host, function(err, bytes) {
+        var client = dgram.createSocket('udp4');
+        client.send(message, 0, message.length, config.port, config.host, function(err, bytes) {
             // if (err) throw err;
             client.close();
 
             _this.sendMsg(++index, limit, name);
         });
     } else {
-        console.timeEnd('udp');
+        console.timeEnd(name);
     }
 
     return;
@@ -34,9 +36,28 @@ UDPClient.prototype.sendMsg = function(index, limit, name) {
  * 执行入口
  */
 UDPClient.prototype.init = function(name) {
-    // console.log(name);
-    console.time('udp');
-    this.sendMsg(0, 1000, name);
+    var _this = this,
+        cpusNum = os.cpus().length,
+        reqEach = config.reqNum / cpusNum;
+
+    // _this.sendMsg(0, config.reqNum, name); return;
+    console.time(name);
+    if (cluster.isMaster) {
+        os.cpus().forEach(function(val, key) {
+            var worker_process = cluster.fork();
+            worker_process.on('message', function(msg) {
+                if (msg.cmd && msg.cmd === 'notify') {
+                    var start = key * reqEach,
+                        limit = start + reqEach;
+                    _this.sendMsg(start, limit, name);
+                }
+            });
+        });
+    } else if (cluster.isWorker) {
+        process.send({
+            cmd: 'notify'
+        });
+    }
 
     return;
 }
@@ -44,8 +65,5 @@ UDPClient.prototype.init = function(name) {
 /**
  * 实例化
  */
-var clientA = new UDPClient(),
-    clientB = new UDPClient();
-
-clientA.init('UDP Client A');
-clientB.init('UDP Client B');
+var client = new UDPClient();
+client.init('UDPClient');

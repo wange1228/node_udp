@@ -1,12 +1,12 @@
+var config = require('./udp_config'),
+    fs = require('fs'),
+    dgram = require('dgram'),
+    udp4 = dgram.createSocket('udp4');
+
 /**
  * UDP 服务器
  */
 function UDPServer() {
-    this.config = require('./udp_config');
-    this.fs = require('fs');
-    this.dgram = require('dgram');
-    this.server = this.dgram.createSocket('udp4');
-
     return;
 }
 
@@ -15,13 +15,13 @@ function UDPServer() {
  */
 UDPServer.prototype.onEvent = function() {
     var _this = this;
-    _this.server.on('listening', function () {
-        var address = _this.server.address();
+    udp4.on('listening', function () {
+        var address = udp4.address();
         console.log('UDP Server listening on ' + address.address + ':' + address.port);
     });
 
-    _this.server.on('message', function (message, remote) {
-        _this.fs.appendFile(_this.config.log, message+'\n', function(err) {
+    udp4.on('message', function (message, remote) {
+        fs.appendFile(config.log, message+'\n', function(err) {
             if (err) throw err;
             console.log(message+'');
         });
@@ -35,8 +35,8 @@ UDPServer.prototype.onEvent = function() {
  */
 UDPServer.prototype.startUp = function(port, host) {
     var _this = this;
-    _this.fs.unlink(_this.config.log, function() {
-        _this.server.bind(port, host);
+    fs.unlink(config.log, function() {
+        udp4.bind(port, host);
     });
 
     return;
@@ -47,7 +47,7 @@ UDPServer.prototype.startUp = function(port, host) {
  */
 UDPServer.prototype.init = function() {
     this.onEvent();
-    this.startUp(this.config.port, this.config.host);
+    this.startUp(config.port, config.host);
 
     return;
 }
