@@ -16,7 +16,7 @@ function UDPClient() {
 UDPClient.prototype.sendMsg = function(start, end, name, callback) {
     if (start !== end) {
         var _this = this,
-            message = new Buffer(name + ': ' + start),
+            message = new Buffer(name + ':' + start),
             client = dgram.createSocket('udp4');
 
         client.send(message, 0, message.length, config.port, config.host, function(err, bytes) {
@@ -56,7 +56,7 @@ UDPClient.prototype.init = function() {
     var _this = this,
         cpusNum = os.cpus().length,
         reqEach = config.reqNum / cpusNum,
-        name = 'pid ' + process.pid;
+        name = process.pid;
 
     console.time(name);
     if (cluster.isMaster) {

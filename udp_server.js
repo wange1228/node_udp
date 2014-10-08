@@ -22,7 +22,14 @@ UDPServer.prototype.onEvent = function() {
     });
 
     server.on('message', function (message, remote) {
-        fs.appendFile(config.log, message+'\n', function(err) {
+        var msgStr = message + '',
+            msgArr = msgStr.split(':'),
+            pid = msgArr[0],
+            num = msgArr[1],
+            filename = 'pid_' + pid + '.txt';
+
+        // console.log(pid, num);
+        fs.appendFile(filename, num+'\n', function(err) {
             if (err) throw err;
             console.log(message+'');
         });
@@ -41,9 +48,9 @@ UDPServer.prototype.onEvent = function() {
  */
 UDPServer.prototype.startUp = function(port, host) {
     var _this = this;
-    fs.unlink(config.log, function() {
-        server.bind(port, host);
-    });
+    // fs.unlink(config.log, function() {
+    server.bind(port, host);
+    // });
 
     return;
 }
