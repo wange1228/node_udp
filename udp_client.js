@@ -13,23 +13,38 @@ function UDPClient() {
 /**
  * 发送信息
  */
-UDPClient.prototype.sendMsg = function(index, limit, name, callback) {
-    if (index !== limit) {
+UDPClient.prototype.sendMsg = function(start, end, name, callback) {
+    if (start !== end) {
         var _this = this,
-            message = new Buffer(name + ': ' + index),
+            message = new Buffer(name + ': ' + start),
             client = dgram.createSocket('udp4');
 
         client.send(message, 0, message.length, config.port, config.host, function(err, bytes) {
             if (err) throw err;
             client.close();
 
+            // TODO
+            // setTimeout ? setImmediate ? process.nextTick ?
             setTimeout(function() {
-                _this.sendMsg(++index, limit, name, callback);
+                _this.sendMsg(++start, end, name, callback);
             }, 0);
         });
     } else {
         callback();
     }
+
+    /**
+    if (start !== end) {
+        var _this = this;
+        _this.msgArr.push(name + ': ' + start);
+        setImmediate(function() {
+            _this.sendMsg(++start, end, name, callback);
+        });
+
+    } else {
+        callback();
+    }
+    **/
 
     return;
 }
@@ -50,10 +65,9 @@ UDPClient.prototype.init = function() {
             worker_process.on('message', function(msg) {
                 if (msg.cmd && msg.cmd === 'notify') {
                     var start = key * reqEach,
-                        limit = start + reqEach;
-                    _this.sendMsg(start, limit, name, function() {
+                        end = start + reqEach;
+                    _this.sendMsg(start, end, name, function() {
                         worker_process.disconnect();
-                        console.timeEnd(name);
                     });
                 }
             });
@@ -63,11 +77,9 @@ UDPClient.prototype.init = function() {
                 throw err;
             });
 
-            /**
             worker_process.on('disconnect', function() {
-                throw 'disconnect';
+                console.timeEnd(name);
             });
-            **/
         });
     } else if (cluster.isWorker) {
         process.send({
