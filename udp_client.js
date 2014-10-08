@@ -13,20 +13,22 @@ function UDPClient() {
 /**
  * 发送信息
  */
-UDPClient.prototype.sendMsg = function(index, limit, name) {
-    var _this = this,
-        message = new Buffer(index+' from '+name);
-
+UDPClient.prototype.sendMsg = function(index, limit, name, callback) {
     if (index !== limit) {
-        var client = dgram.createSocket('udp4');
+        var _this = this,
+            message = new Buffer(name + ': ' + index),
+            client = dgram.createSocket('udp4');
+
         client.send(message, 0, message.length, config.port, config.host, function(err, bytes) {
-            // if (err) throw err;
+            if (err) throw err;
             client.close();
 
-            _this.sendMsg(++index, limit, name);
+            setTimeout(function() {
+                _this.sendMsg(++index, limit, name, callback);
+            }, 0);
         });
     } else {
-        console.timeEnd(name);
+        callback();
     }
 
     return;
@@ -35,12 +37,12 @@ UDPClient.prototype.sendMsg = function(index, limit, name) {
 /**
  * 执行入口
  */
-UDPClient.prototype.init = function(name) {
+UDPClient.prototype.init = function() {
     var _this = this,
         cpusNum = os.cpus().length,
-        reqEach = config.reqNum / cpusNum;
+        reqEach = config.reqNum / cpusNum,
+        name = 'pid ' + process.pid;
 
-    // _this.sendMsg(0, config.reqNum, name); return;
     console.time(name);
     if (cluster.isMaster) {
         os.cpus().forEach(function(val, key) {
@@ -49,9 +51,23 @@ UDPClient.prototype.init = function(name) {
                 if (msg.cmd && msg.cmd === 'notify') {
                     var start = key * reqEach,
                         limit = start + reqEach;
-                    _this.sendMsg(start, limit, name);
+                    _this.sendMsg(start, limit, name, function() {
+                        worker_process.disconnect();
+                        console.timeEnd(name);
+                    });
                 }
             });
+
+            worker_process.on('error', function(err) {
+                console.log(err);
+                throw err;
+            });
+
+            /**
+            worker_process.on('disconnect', function() {
+                throw 'disconnect';
+            });
+            **/
         });
     } else if (cluster.isWorker) {
         process.send({
@@ -65,5 +81,4 @@ UDPClient.prototype.init = function(name) {
 /**
  * 实例化
  */
-var client = new UDPClient();
-client.init('UDPClient');
+new UDPClient().init();

@@ -2,7 +2,7 @@ var config = require('./udp_config'),
     fs = require('fs'),
     cluster = require('cluster'),
     dgram = require('dgram'),
-    udp4 = dgram.createSocket('udp4');
+    server = dgram.createSocket('udp4');
 
 /**
  * UDP 服务器
@@ -16,16 +16,21 @@ function UDPServer() {
  */
 UDPServer.prototype.onEvent = function() {
     var _this = this;
-    udp4.on('listening', function () {
-        var address = udp4.address();
+    server.on('listening', function () {
+        var address = server.address();
         console.log('UDP Server listening on ' + address.address + ':' + address.port);
     });
 
-    udp4.on('message', function (message, remote) {
+    server.on('message', function (message, remote) {
         fs.appendFile(config.log, message+'\n', function(err) {
             if (err) throw err;
             console.log(message+'');
         });
+    });
+
+    server.on('error', function(err) {
+        console.log(err);
+        throw err;
     });
 
     return;
@@ -37,7 +42,7 @@ UDPServer.prototype.onEvent = function() {
 UDPServer.prototype.startUp = function(port, host) {
     var _this = this;
     fs.unlink(config.log, function() {
-        udp4.bind(port, host);
+        server.bind(port, host);
     });
 
     return;
@@ -60,5 +65,4 @@ UDPServer.prototype.init = function() {
 /**
  * 实例化
  */
-var server = new UDPServer();
-server.init();
+new UDPServer().init();
