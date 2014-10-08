@@ -7,6 +7,7 @@ var config = require('./udp_config'),
  * UDP 客户端
  */
 function UDPClient() {
+    // this.msgArr = [];
     return;
 }
 
@@ -14,6 +15,8 @@ function UDPClient() {
  * 发送信息
  */
 UDPClient.prototype.sendMsg = function(start, end, name, callback) {
+    // TODO
+    // http://stackoverflow.com/questions/9486683/writing-large-files-with-node-js
     if (start !== end) {
         var _this = this,
             message = new Buffer(name + ':' + start),
@@ -25,6 +28,8 @@ UDPClient.prototype.sendMsg = function(start, end, name, callback) {
 
             // TODO
             // setTimeout ? setImmediate ? process.nextTick ?
+            // _this.msgArr.push(name + ': ' + start);
+            // console.log('name: '+name, 'length: '+_this.msgArr.length);
             setTimeout(function() {
                 _this.sendMsg(++start, end, name, callback);
             }, 0);
@@ -79,6 +84,7 @@ UDPClient.prototype.init = function() {
 
             worker_process.on('disconnect', function() {
                 console.timeEnd(name);
+                // _this.msgArr = [];
             });
         });
     } else if (cluster.isWorker) {

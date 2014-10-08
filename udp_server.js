@@ -31,7 +31,7 @@ UDPServer.prototype.onEvent = function() {
         // console.log(pid, num);
         fs.appendFile(filename, num+'\n', function(err) {
             if (err) throw err;
-            console.log(message+'');
+            console.log('pid: '+pid+'\t'+'num: '+num);
         });
     });
 
