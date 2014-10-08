@@ -1,5 +1,6 @@
 var config = require('./udp_config'),
     fs = require('fs'),
+    cluster = require('cluster'),
     dgram = require('dgram'),
     udp4 = dgram.createSocket('udp4');
 
@@ -46,8 +47,12 @@ UDPServer.prototype.startUp = function(port, host) {
  * 执行入口
  */
 UDPServer.prototype.init = function() {
-    this.onEvent();
-    this.startUp(config.port, config.host);
+    if (cluster.isMaster) {
+        cluster.fork();
+    } else if (cluster.isWorker) {
+        this.onEvent();
+        this.startUp(config.port, config.host);
+    }
 
     return;
 }
