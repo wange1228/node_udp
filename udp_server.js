@@ -24,15 +24,24 @@ UDPServer.prototype.onEvent = function() {
     server.on('message', function (message, remote) {
         var msgStr = message + '',
             msgArr = msgStr.split(':'),
-            pid = msgArr[0],
-            num = msgArr[1],
-            filename = 'pid_' + pid + '.txt';
+            parentPid = msgArr[0],
+            childPid = msgArr[1],
+            num = msgArr[2],
+            filename = parentPid+'_'+childPid+'.txt';
 
-        // console.log(pid, num);
-        fs.appendFile(filename, num+'\n', function(err) {
-            if (err) throw err;
-            console.log('pid: '+pid+'\t'+'num: '+num);
-        });
+        if (num !== '-1') {
+            fs.appendFile(filename, num+'\n', function(err) {
+                if (err) throw err;
+                console.log('pid: '+childPid+'\t'+'num: '+num);
+            });
+        } else {
+            var source = fs.createReadStream(filename),
+                target = fs.createWriteStream('pid_'+parentPid+'.txt', {flags: 'a'});
+            source.pipe(target);
+            source.on('end', function() {
+                fs.unlink(filename);
+            });
+        }
     });
 
     server.on('error', function(err) {
