@@ -6,24 +6,23 @@ var config = require('./udp_config'),
     server = dgram.createSocket('udp4');
 
 /**
- * UDP 服务器
+ * UDP 终端
  */
-function UDPServer() {
+function UDPTerminal() {
     return;
 }
 
 /**
- * 服务器事件监听
+ * 终端事件监听
  */
-UDPServer.prototype.onEvent = function() {
+UDPTerminal.prototype.onEvent = function() {
     var _this = this;
     server.on('listening', function () {
         var address = server.address();
-        console.log('UDP Server listening on ' + address.address + ':' + address.port);
+        console.log('UDP Terminal listening on ' + address.address + ':' + address.port);
     });
 
     server.on('message', function (message, remote) {
-        /**
         var msgStr = message + '',
             msgArr = msgStr.split(':'),
             parentPid = msgArr[0],
@@ -46,7 +45,6 @@ UDPServer.prototype.onEvent = function() {
                 });
             }, 0);
         }
-        **/
     });
 
     server.on('error', function(err) {
@@ -58,9 +56,9 @@ UDPServer.prototype.onEvent = function() {
 }
 
 /**
- * 启动服务器
+ * 启动终端
  */
-UDPServer.prototype.startUp = function(port, host) {
+UDPTerminal.prototype.startUp = function(port, host) {
     var _this = this;
     // fs.unlink(config.log, function() {
     server.bind(port, host);
@@ -72,7 +70,7 @@ UDPServer.prototype.startUp = function(port, host) {
 /**
  * 执行入口
  */
-UDPServer.prototype.init = function() {
+UDPTerminal.prototype.init = function() {
     var _this = this;
     if (cluster.isMaster) {
         os.cpus().forEach(function(val, key) {
@@ -89,4 +87,5 @@ UDPServer.prototype.init = function() {
 /**
  * 实例化
  */
-new UDPServer().init();
+new UDPTerminal().init();
+
