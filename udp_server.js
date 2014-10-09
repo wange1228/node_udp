@@ -36,12 +36,14 @@ UDPServer.prototype.onEvent = function() {
                 // console.log('pid: '+childPid+'\t'+'num: '+num);
             });
         } else {
-            var source = fs.createReadStream(filename),
-                target = fs.createWriteStream('pid_'+parentPid+'.txt', {flags: 'a'});
-            source.pipe(target);
-            source.on('end', function() {
-                fs.unlink(filename);
-            });
+            setTimeout(function() {
+                var source = fs.createReadStream(filename),
+                    target = fs.createWriteStream('pid_'+parentPid+'.txt', {flags: 'a'});
+                source.pipe(target);
+                source.on('end', function() {
+                    fs.unlink(filename);
+                });
+            }, 0);
         }
     });
 

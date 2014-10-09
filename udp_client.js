@@ -15,8 +15,6 @@ function UDPClient() {
  * 发送信息
  */
 UDPClient.prototype.sendMsg = function(start, end, name, callback) {
-    // TODO
-    // http://stackoverflow.com/questions/9486683/writing-large-files-with-node-js
     if (start !== end) {
         var _this = this,
             childPid = name,
@@ -28,13 +26,10 @@ UDPClient.prototype.sendMsg = function(start, end, name, callback) {
             if (err) throw err;
             client.close();
 
-            // TODO
             // setTimeout ? setImmediate ? process.nextTick ?
-            // _this.msgArr.push(name + ': ' + start);
-            // console.log('name: '+name, 'length: '+_this.msgArr.length);
-            setImmediate(function() {
+            setTimeout(function() {
                 _this.sendMsg(++start, end, name, callback);
-            });
+            }, 0);
         });
     } else {
         callback();
