@@ -77,7 +77,7 @@ UDPTerminal.prototype.init = function() {
             cluster.fork();
         });
     } else if (cluster.isWorker) {
-        _this.startUp(config.port, config.host);
+        _this.startUp(config.terminalPort, config.terminalHost);
         _this.onEvent();
     }
 

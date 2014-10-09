@@ -26,7 +26,7 @@ UDPServer.prototype.onEvent = function() {
         var client = dgram.createSocket('udp4'),
             msg = new Buffer(message);
 
-        client.send(msg, 0, msg.length, config.port, config.host, function(err, bytes) {
+        client.send(msg, 0, msg.length, config.terminalPort, config.terminalHost, function(err, bytes) {
             if (err) throw err;
             client.close();
         });
@@ -62,7 +62,7 @@ UDPServer.prototype.init = function() {
             cluster.fork();
         });
     } else if (cluster.isWorker) {
-        _this.startUp(config.port, config.host);
+        _this.startUp(config.serverPort, config.serverHost);
         _this.onEvent();
     }
 

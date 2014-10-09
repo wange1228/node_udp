@@ -22,7 +22,7 @@ UDPClient.prototype.sendMsg = function(start, end, name, callback) {
             message = new Buffer(parentPid + ':' + childPid + ':' + start),
             client = dgram.createSocket('udp4');
 
-        client.send(message, 0, message.length, config.port, config.host, function(err, bytes) {
+        client.send(message, 0, message.length, config.serverPort, config.serverHost, function(err, bytes) {
             if (err) throw err;
             client.close();
 
@@ -73,7 +73,7 @@ UDPClient.prototype.init = function() {
                     childPid = worker_process.process.pid,
                     parentPid = process.pid,
                     message = new Buffer(parentPid + ':' + childPid + ':' + '-1');
-                client.send(message, 0, message.length, config.port, config.host, function(err, bytes) {
+                client.send(message, 0, message.length, config.serverPort, config.serverHost, function(err, bytes) {
                     if (err) throw err;
                     client.close();
                     console.timeEnd(parentPid);
