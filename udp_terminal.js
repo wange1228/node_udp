@@ -28,7 +28,7 @@ UDPTerminal.prototype.onEvent = function() {
             parentPid = msgArr[0],
             childPid = msgArr[1],
             num = msgArr[2],
-            filename = parentPid+'_'+childPid+'.txt';
+            filename = './result/'+parentPid+'_'+childPid+'.txt';
 
         if (num !== '-1') {
             fs.appendFile(filename, num+'\n', function(err) {
@@ -38,7 +38,7 @@ UDPTerminal.prototype.onEvent = function() {
         } else {
             setTimeout(function() {
                 var source = fs.createReadStream(filename),
-                    target = fs.createWriteStream('pid_'+parentPid+'.txt', {flags: 'a'});
+                    target = fs.createWriteStream('./result/pid_'+parentPid+'.txt', {flags: 'a'});
                 source.pipe(target);
                 source.on('end', function() {
                     fs.unlink(filename);
