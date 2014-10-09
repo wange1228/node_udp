@@ -23,30 +23,13 @@ UDPServer.prototype.onEvent = function() {
     });
 
     server.on('message', function (message, remote) {
-        /**
-        var msgStr = message + '',
-            msgArr = msgStr.split(':'),
-            parentPid = msgArr[0],
-            childPid = msgArr[1],
-            num = msgArr[2],
-            filename = parentPid+'_'+childPid+'.txt';
+        var client = dgram.createSocket('udp4'),
+            msg = new Buffer(message);
 
-        if (num !== '-1') {
-            fs.appendFile(filename, num+'\n', function(err) {
-                if (err) throw err;
-                // console.log('pid: '+childPid+'\t'+'num: '+num);
-            });
-        } else {
-            setTimeout(function() {
-                var source = fs.createReadStream(filename),
-                    target = fs.createWriteStream('pid_'+parentPid+'.txt', {flags: 'a'});
-                source.pipe(target);
-                source.on('end', function() {
-                    fs.unlink(filename);
-                });
-            }, 0);
-        }
-        **/
+        client.send(msg, 0, msg.length, config.port, config.host, function(err, bytes) {
+            if (err) throw err;
+            client.close();
+        });
     });
 
     server.on('error', function(err) {
