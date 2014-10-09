@@ -1,6 +1,7 @@
 var config = require('./udp_config'),
     fs = require('fs'),
     cluster = require('cluster'),
+    os = require('os'),
     dgram = require('dgram'),
     server = dgram.createSocket('udp4');
 
@@ -32,7 +33,7 @@ UDPServer.prototype.onEvent = function() {
         if (num !== '-1') {
             fs.appendFile(filename, num+'\n', function(err) {
                 if (err) throw err;
-                console.log('pid: '+childPid+'\t'+'num: '+num);
+                // console.log('pid: '+childPid+'\t'+'num: '+num);
             });
         } else {
             var source = fs.createReadStream(filename),
@@ -68,11 +69,14 @@ UDPServer.prototype.startUp = function(port, host) {
  * 执行入口
  */
 UDPServer.prototype.init = function() {
+    var _this = this;
     if (cluster.isMaster) {
-        cluster.fork();
+        os.cpus().forEach(function(val, key) {
+            cluster.fork();
+        });
     } else if (cluster.isWorker) {
-        this.onEvent();
-        this.startUp(config.port, config.host);
+        _this.startUp(config.port, config.host);
+        _this.onEvent();
     }
 
     return;
